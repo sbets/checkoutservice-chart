@@ -1,0 +1,50 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ .Values.global.name }}
+spec:
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.global.name }}
+        release: {{ .Release.Name }}
+        heritage: {{ .Release.Service }}
+    spec:
+      containers:
+      - name: server
+        image: {{ template "checkoutservice.image" . }}
+        ports:
+        - containerPort: {{ .Values.image.port }}
+        env:
+        - name: PRODUCT_CATALOG_SERVICE_ADDR
+          value: "productcatalogservice:3550"
+        - name: SHIPPING_SERVICE_ADDR
+          value: "shippingservice:50051"
+        - name: PAYMENT_SERVICE_ADDR
+          value: "paymentservice:50051"
+        - name: EMAIL_SERVICE_ADDR
+          value: "emailservice:5000"
+        - name: CURRENCY_SERVICE_ADDR
+          value: "currencyservice:7000"
+        - name: CART_SERVICE_ADDR
+          value: "cartservice:7070"
+        readinessProbe:
+          exec:
+            command: ["/bin/grpc_health_probe", "-addr=:5050"]
+        livenessProbe:
+          exec:
+            command: ["/bin/grpc_health_probe", "-addr=:5050"]
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.global.name }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: {{ .Values.global.name }}
+  ports:
+{{ toYaml .Values.service.ports | indent 2 }}

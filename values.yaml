@@ -1,0 +1,27 @@
+## Images
+image:
+  registry: gcr.io
+  repository: google-samples/microservices-demo/checkoutservice
+  tag: v0.1.0
+  pullPolicy: Always
+  port: 5050
+  cmd: ["/bin/grpc_health_probe", "-addr=:5050"]
+
+global:
+  imageRegistry: gcr.io
+  name: checkoutservice
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+service:
+  type: ClusterIP
+  ports:
+    - name: grpc
+      port: 5050
+      targetPort: 5050
